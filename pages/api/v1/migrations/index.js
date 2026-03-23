@@ -5,7 +5,9 @@ import database from "infra/database.js";
 export default async function migrations(request, response) {
   const allowedMethods = ["GET", "POST"];
   if (!allowedMethods.includes(request.method)) {
-    return response.status(405).json({ error: `Method "${request.method}" Not Allowed` });
+    return response
+      .status(405)
+      .json({ error: `Method "${request.method}" Not Allowed` });
   }
   let dbClient;
   try {
@@ -34,13 +36,11 @@ export default async function migrations(request, response) {
       }
 
       return response.status(200).json(migratedMigrations);
-  
     }
   } catch (error) {
     console.error("Migration error:", error);
-    throw new error;
-  }
-  finally {
+    throw new error();
+  } finally {
     if (dbClient) {
       await dbClient.end();
     }
