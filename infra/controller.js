@@ -1,4 +1,3 @@
-
 import { InternalServerError, MethodNotAllowedError } from "infra/errors.js";
 
 function onNoMatchHandler(request, response) {
@@ -15,11 +14,11 @@ function onErrorHandler(error, request, response) {
   response.status(publicErrorObject.statusCode).json(publicErrorObject);
 }
 
-const controller =  {
-    errorHandlers: {
-        onNoMatch: onNoMatchHandler,
-        onError: onErrorHandler,
-    }
+const controller = {
+  errorHandlers: {
+    onNoMatch: onNoMatchHandler,
+    onError: onErrorHandler,
+  },
 };
 
 export default controller;
