@@ -19,6 +19,10 @@ function onErrorHandler(error, request, response) {
     error instanceof NotFoundError ||
     error instanceof UnauthorizedError
   ) {
+    if (error instanceof UnauthorizedError) {
+      controller.clearSessionCookie(response);
+    }
+
     return response.status(error.statusCode).json(error);
   }
   const publicErrorObject = new InternalServerError({
