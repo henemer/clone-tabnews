@@ -1,4 +1,5 @@
 import orchestration from "tests/orchestrator.js";
+import activation from "models/activation.js";
 
 beforeAll(async () => {
   await orchestration.waitForAllServices();
@@ -8,6 +9,7 @@ beforeAll(async () => {
 });
 
 describe("Use case: Registration flow (all successful)", () => {
+  let createUserResponseBody;
   test("Create user account", async () => {
     const createUserResponse = await fetch(
       "http://localhost:3000/api/v1/users",
@@ -26,7 +28,7 @@ describe("Use case: Registration flow (all successful)", () => {
 
     expect(createUserResponse.status).toBe(201);
 
-    const createUserResponseBody = await createUserResponse.json();
+    createUserResponseBody = await createUserResponse.json();
 
     expect(createUserResponseBody).toEqual({
       id: expect.any(String),
@@ -39,7 +41,20 @@ describe("Use case: Registration flow (all successful)", () => {
     });
   });
 
-  test("Receive activation email", async () => {});
+  test("Receive activation email", async () => {
+    const lastEmail = await orchestration.getLastEmail();
+    expect(lastEmail.sender).toBe("<contato@oscontrole.com.br>");
+    expect(lastEmail.recipients[0]).toBe("<registration.flow@henning.com.br>");
+    expect(lastEmail.subject).toContain("Ative seu cadastro no OSControle!");
+    expect(lastEmail.text).toContain("RegistrationFlow");
+
+    const activationToken = await activation.findOneByUserId(
+      createUserResponseBody.id,
+    );
+    expect(lastEmail.text).toContain(activationToken.id);
+
+    console.log(lastEmail.text);
+  });
 
   test("Activate user account", async () => {});
   test("Login", async () => {});
