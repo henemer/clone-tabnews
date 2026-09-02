@@ -1,6 +1,7 @@
 import orchestration from "tests/orchestrator.js";
 import webserver from "infra/webserver";
 import activation from "models/activation";
+import user from "models/user";
 
 beforeAll(async () => {
   await orchestration.waitForAllServices();
@@ -11,6 +12,7 @@ beforeAll(async () => {
 
 describe("Use case: Registration flow (all successful)", () => {
   let createUserResponseBody;
+  let activationTokenId;
   test("Create user account", async () => {
     const createUserResponse = await fetch(
       "http://localhost:3000/api/v1/users",
@@ -49,20 +51,38 @@ describe("Use case: Registration flow (all successful)", () => {
     expect(lastEmail.subject).toContain("Ative seu cadastro no OSControle!");
     expect(lastEmail.text).toContain("RegistrationFlow");
 
-    const activationToken = orchestration.extractUUID(lastEmail.text);
+    activationTokenId = orchestration.extractUUID(lastEmail.text);
 
     expect(lastEmail.text).toContain(
-      `${webserver.origin}/cadastro/ativar/${activationToken}`,
+      `${webserver.origin}/cadastro/ativar/${activationTokenId}`,
     );
 
     const activationTokenObject =
-      await activation.findOneValidById(activationToken);
+      await activation.findOneValidById(activationTokenId);
 
     expect(activationTokenObject.user_id).toBe(createUserResponseBody.id);
     expect(activationTokenObject.used_at).toBeNull();
   });
 
-  test("Activate user account", async () => {});
+  test("Activate user account", async () => {
+    const activationResponse = await fetch(
+      `http://localhost:3000/api/v1/activations/${activationTokenId}`,
+      {
+        method: "PATCH",
+      },
+    );
+
+    expect(activationResponse.status).toBe(200);
+
+    const activationResponseBody = await activationResponse.json();
+
+    expect(Date.parse(activationResponseBody.used_at)).not.toBeNaN();
+
+    const activatedUser = await user.findOneByUsername("RegistrationFlow");
+
+    expect(activatedUser.features).toEqual(["create:session"]);
+  });
+
   test("Login", async () => {});
 
   test("Get user information", async () => {});
