@@ -1,5 +1,6 @@
 import orchestration from "tests/orchestrator.js";
-import activation from "models/activation.js";
+import webserver from "infra/webserver";
+import activation from "models/activation";
 
 beforeAll(async () => {
   await orchestration.waitForAllServices();
@@ -48,12 +49,17 @@ describe("Use case: Registration flow (all successful)", () => {
     expect(lastEmail.subject).toContain("Ative seu cadastro no OSControle!");
     expect(lastEmail.text).toContain("RegistrationFlow");
 
-    const activationToken = await activation.findOneByUserId(
-      createUserResponseBody.id,
-    );
-    expect(lastEmail.text).toContain(activationToken.id);
+    const activationToken = orchestration.extractUUID(lastEmail.text);
 
-    console.log(lastEmail.text);
+    expect(lastEmail.text).toContain(
+      `${webserver.origin}/cadastro/ativar/${activationToken}`,
+    );
+
+    const activationTokenObject =
+      await activation.findOneValidById(activationToken);
+
+    expect(activationTokenObject.user_id).toBe(createUserResponseBody.id);
+    expect(activationTokenObject.used_at).toBeNull();
   });
 
   test("Activate user account", async () => {});

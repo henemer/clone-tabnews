@@ -1,6 +1,7 @@
 import email from "infra/email.js";
 import database from "infra/database";
 import webserver from "infra/webserver";
+import { NotFoundError } from "infra/errors.js";
 
 const EXPIRATION_IN_MILLISECONDS = 60 * 15 * 1000; // 15 minutes
 
@@ -38,23 +39,33 @@ Equipe OSControle
   });
 }
 
-async function findOneByUserId(userId) {
-  const newToken = await runSelectQuery(userId);
-  return newToken;
+async function findOneValidById(activationTokenId) {
+  const activationTokenObject = await runSelectQuery(activationTokenId);
 
-  async function runSelectQuery(userId) {
-    const result = await database.query({
-      text: `SELECT * FROM user_activation_tokens WHERE user_id = $1`,
-      values: [userId],
+  return activationTokenObject;
+
+  async function runSelectQuery(activationTokenId) {
+    const results = await database.query({
+      text: `SELECT * FROM user_activation_tokens WHERE id = $1 AND used_at IS NULL AND expires_at > NOW()`,
+      values: [activationTokenId],
     });
-    return result.rows[0];
+
+    if (results.rowCount === 0) {
+      throw new NotFoundError({
+        message:
+          "O token de ativação não foi encontrado no sistema ou já expirou",
+        action: "Faça um novo cadastro",
+      });
+    }
+
+    return results.rows[0];
   }
 }
 
 const activation = {
   sendEmailToUser,
   create,
-  findOneByUserId,
+  findOneValidById,
 };
 
 export default activation;
