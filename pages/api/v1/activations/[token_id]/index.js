@@ -10,7 +10,6 @@ router.patch(controller.canRequest("read:activation_token"), patchHandler);
 export default router.handler(controller.errorHandlers);
 
 async function patchHandler(req, res) {
-  console.log("Antes de chegar aqui....");
   const activationTokenId = req.query.token_id;
 
   const validActivationToken =
