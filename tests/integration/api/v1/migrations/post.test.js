@@ -27,7 +27,7 @@ describe("POST /api/v1/migrations", () => {
   });
 
   describe("Default user", () => {
-    test("Retrieving pending migrations", async () => {
+    test("Retrieving pending migrations with default user", async () => {
       const createdUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(createdUser);
       const sessionObject = await orchestrator.createSession(activatedUser.id);
@@ -52,7 +52,7 @@ describe("POST /api/v1/migrations", () => {
   });
 
   describe("Privileged user", () => {
-    test("Retrieving pending migrations", async () => {
+    test("Retrieving pending migrations with previleged user", async () => {
       const createdUser = await orchestrator.createUser();
       const activatedUser = await orchestrator.activateUser(createdUser);
       await orchestrator.addFeaturesToUser(createdUser, ["create:migration"]);

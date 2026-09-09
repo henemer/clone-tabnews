@@ -2,7 +2,6 @@ import { version as uuidVersion } from "uuid";
 import activation from "models/activation.js";
 import user from "models/user.js";
 import orchestrator from "tests/orchestrator.js";
-import { getExpectedRequestStore } from "next/dist/client/components/request-async-storage.external";
 
 beforeAll(async () => {
   await orchestrator.waitForAllServices();

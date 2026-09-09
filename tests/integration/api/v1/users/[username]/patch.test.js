@@ -12,10 +12,6 @@ beforeAll(async () => {
 describe("PATCH /api/v1/users/[username]", () => {
   describe("Anonymous user", () => {
     test("With unique username", async () => {
-      const createdUser = await orchestrator.createUser({
-        username: "uniqueUser1",
-      });
-
       const response = await fetch(
         "http://localhost:3000/api/v1/users/uniqueUser1",
         {
