@@ -176,13 +176,10 @@ describe("Default user", () => {
   test("With valid token, but already logged in user", async () => {
     const user1 = await orchestrator.createUser();
     await orchestrator.activateUser(user1);
-    const user1SessionObject = await orchestrator.createSession(user1.id);
+    const user1SessionObject = await orchestrator.createSession(user1);
 
     const user2 = await orchestrator.createUser();
     const user2ActivationToken = await activation.create(user2.id);
-
-    console.log("User1SessionObject.id", user1SessionObject.id);
-    console.log("User2ActivationToken.id", user2ActivationToken.id);
 
     const response = await fetch(
       `${webserver.origin}/api/v1/activations/${user2ActivationToken.id}`,
